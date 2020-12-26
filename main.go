@@ -13,5 +13,8 @@ func main() {
 	config.GetConfigFromFile("config.json", &graf)
 	log.Println(graf)
 	graf.Search()
-	graf.FindByTitle("gatling")
+	err := graf.GetImages()
+	if err != nil {
+		log.Println(err)
+	}
 }

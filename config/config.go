@@ -15,12 +15,11 @@ func GetConfigFromFile(fileName string, configStruct interface{}) {
 	}
 	defer file.Close()
 	buff := bytes.Buffer{}
-	nByte, err := buff.ReadFrom(file)
+	_, err = buff.ReadFrom(file)
 	if err != nil {
 		log.Println(err)
 	}
-	log.Println(string(buff.Bytes()))
-	log.Println("Was readed ", nByte)
 	json.Unmarshal(buff.Bytes(), configStruct)
+	log.Println(configStruct)
 
 }
