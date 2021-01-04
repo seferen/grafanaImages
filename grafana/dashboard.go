@@ -11,14 +11,15 @@ import (
 )
 
 type Panel struct {
-	Id     int     `json:"id"`
-	Title  string  `json:"Title"`
-	Type   string  `json:"type"`
-	Panels []Panel `json:"panels"`
+	Id          int     `json:"id"`
+	Title       string  `json:"Title"`
+	Type        string  `json:"type"`
+	Panels      []Panel `json:"panels"`
+	Transparent bool    `json:"transparent"`
 }
 
 func (p Panel) String() string {
-	return fmt.Sprintf("{id: %d, title: %s, type: %s, panels: %v}", p.Id, p.Title, p.Type, p.Panels)
+	return fmt.Sprintf("{id: %d, title: %s, type: %s, panels: %v, transparent: %v}", p.Id, p.Title, p.Type, p.Panels, p.Transparent)
 }
 
 func (p *Panel) GetPanelIdWithGraph(grafana *Grafana, dashboard *DashboardFull) []*url.URL {
@@ -26,6 +27,7 @@ func (p *Panel) GetPanelIdWithGraph(grafana *Grafana, dashboard *DashboardFull) 
 
 	//если Тип является графиком то выполнить деествия в урпавляющей конструкции
 	if p.Type == "graph" {
+		log.Println(p)
 		//Парсим юрл Юрл Графаны
 		resultUrl, err := url.Parse(grafana.URL)
 		if err != nil {
@@ -37,25 +39,35 @@ func (p *Panel) GetPanelIdWithGraph(grafana *Grafana, dashboard *DashboardFull) 
 		//формируем query для запроса
 		qr := resultUrl.Query()
 
-		for _, v := range dashboard.Dashboard.Templating.List {
-			log.Println(v)
-			if v.UseTags == true {
-				switch t := v.Current.Value.(type) {
-				case []interface{}:
-					log.Println("array", t)
-				default:
-					log.Println("notarray", t)
+		// for _, v := range dashboard.Dashboard.Templating.List {
+		// 	// if v.UseTags == true {
+		// 	switch t := v.Current.Value.(type) {
+		// 	case []interface{}:
+		// 		log.Println("tag struct:", v, " array", t)
 
-				}
+		// 		for _, v1 := range t {
+		// 			qr.Add("var-"+v.Name, strings.Trim(v1.(string), "$__"))
 
-			}
+		// 		}
+		// 	case string:
+		// 		log.Println("tag struct:", v, " notarray", t)
+		// 		qr.Add("var-"+v.Name, strings.Trim(t, "$__"))
+		// 	default:
+		// 		log.Println("ERROR", t)
 
-		}
-		qr.Add("orgId", "1")
-		qr.Add("panelId", strconv.Itoa(p.Id))
+		// 	}
+		// 	// }
+		// }
 
-		qr.Add("from", parceTime(grafana.Test.TimeStart))
-		qr.Add("to", parceTime(grafana.Test.TimeEnd))
+		qr.Set("orgId", "1")
+		qr.Set("panelId", strconv.Itoa(p.Id))
+
+		qr.Set("from", parceTime(grafana.Test.TimeStart))
+		qr.Set("to", parceTime(grafana.Test.TimeEnd))
+		qr.Set("width", "1000")
+		qr.Set("height", "500")
+		qr.Set("tz", "Europe/Moscow")
+		qr.Set("timeout", "20")
 
 		resultUrl.RawQuery = qr.Encode()
 
@@ -84,8 +96,12 @@ type Variables struct {
 }
 
 func (v *Variables) UnmarshalJSON(b []byte) error {
-	v.UseTags = true
-	return json.Unmarshal(b, v)
+	type aliasVariables Variables
+	var all aliasVariables
+	all.UseTags = true
+	err := json.Unmarshal(b, &all)
+	*v = Variables(all)
+	return err
 
 }
 
@@ -128,9 +144,9 @@ func (d *DashboardFull) GetUrls(grafana *Grafana) {
 	for _, dash := range d.Dashboard.Panels {
 		urls = append(urls, dash.GetPanelIdWithGraph(grafana, d)...)
 	}
-	for _, u := range urls {
-		log.Println(u.String())
-	}
+	// for _, u := range urls {
+	// 	log.Println(u.String())
+	// }
 
 }
 func parceTime(timeStr string) string {

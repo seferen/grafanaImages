@@ -11,7 +11,7 @@ func main() {
 
 	graf := grafana.Grafana{}
 	config.GetConfigFromFile("config.json", &graf)
-	log.Println(graf)
+
 	graf.Search()
 	err := graf.GetImages()
 	if err != nil {

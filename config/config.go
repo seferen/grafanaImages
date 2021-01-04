@@ -1,7 +1,6 @@
 package config
 
 import (
-	"bytes"
 	"encoding/json"
 	"log"
 	"os"
@@ -14,12 +13,11 @@ func GetConfigFromFile(fileName string, configStruct interface{}) {
 		log.Panicln(err)
 	}
 	defer file.Close()
-	buff := bytes.Buffer{}
-	_, err = buff.ReadFrom(file)
+	dec := json.NewDecoder(file)
+	dec.Decode(configStruct)
 	if err != nil {
 		log.Println(err)
 	}
-	json.Unmarshal(buff.Bytes(), configStruct)
 	log.Println(configStruct)
 
 }

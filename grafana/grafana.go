@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -42,7 +41,22 @@ type Grafana struct {
 	dashboards []dashboard
 }
 
+// func (g *Grafana) UnmarshalJSON(b []byte) error {
+// 	var rawString map[string]interface{}
+
+// 	err := json.Unmarshal(b, &rawString)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	log.Println(rawString)
+
+// 	return nil
+
+// }
+
 func (g Grafana) String() string {
+
 	return fmt.Sprintf("{url: %s, token: %s}", g.URL, g.TOKEN)
 }
 
@@ -54,7 +68,7 @@ func (g *Grafana) Search() error {
 	if err != nil {
 		return err
 	}
-	// req.Header.Add("Authorization", "Bearer "+g.TOKEN)
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
@@ -67,8 +81,6 @@ func (g *Grafana) Search() error {
 		log.Println(err)
 	}
 
-	// log.Println("Config:", g.Config)
-	// log.Println("Dashboards:", result)
 	for _, dash := range result {
 		if _, b := g.Config[dash.Title]; b {
 			g.dashboards = append(g.dashboards, dash)
@@ -79,30 +91,30 @@ func (g *Grafana) Search() error {
 	return nil
 }
 
-func (g *Grafana) getDashboardByUid(uid string) (dash *DashboardFull, err error) {
+func (g *Grafana) getDashboardByUid(uid string) (*DashboardFull, error) {
 	urlRes := strings.Trim(g.URL, "/") + "/api/dashboards/uid/" + uid
 	log.Println(urlRes)
+	dash := DashboardFull{}
 	req, err := g.NewGrafanaRequest(http.MethodGet, urlRes, nil)
 	if err != nil {
-		return dash, err
+		return nil, err
 	}
+	log.Println("Request:", urlRes, "was fomed")
 	resp, err := client.Do(req)
 	if err != nil {
-		return dash, err
+		return nil, err
 	}
+	log.Println("Request:", urlRes, "was recived")
 	defer resp.Body.Close()
 
-	bodyB, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return dash, err
-	}
+	dec := json.NewDecoder(resp.Body)
 
-	err = json.Unmarshal(bodyB, &dash)
+	err = dec.Decode(&dash)
 	if err != nil {
-		return dash, err
+		return nil, err
 	}
-	// dash.GetPanelId()
-	return dash, nil
+	log.Println("Request:", urlRes, "was write to dash as JSON")
+	return &dash, nil
 
 }
 
