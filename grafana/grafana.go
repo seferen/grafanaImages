@@ -31,7 +31,7 @@ func (d dashboard) String() string {
 
 //Grafana config of Grafana structure
 type Grafana struct {
-	URL  string `json:"url"`
+	URL  Url `json:"url"`
 	Test struct {
 		TimeStart string `json:"timeStart"`
 		TimeEnd   string `json:"timeEnd"`
@@ -41,28 +41,14 @@ type Grafana struct {
 	dashboards []dashboard
 }
 
-// func (g *Grafana) UnmarshalJSON(b []byte) error {
-// 	var rawString map[string]interface{}
-
-// 	err := json.Unmarshal(b, &rawString)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	log.Println(rawString)
-
-// 	return nil
-
-// }
-
 func (g Grafana) String() string {
 
-	return fmt.Sprintf("{url: %s, token: %s}", g.URL, g.TOKEN)
+	return fmt.Sprintf("{url: %s, token: %s}", g.URL.UrlStr, g.TOKEN)
 }
 
 func (g *Grafana) Search() error {
 
-	urlRes := g.URL + "/api/search/"
+	urlRes := g.URL.UrlStr + "/api/search/"
 	log.Println(urlRes)
 	req, err := g.NewGrafanaRequest(http.MethodGet, urlRes, nil)
 	if err != nil {
@@ -92,7 +78,7 @@ func (g *Grafana) Search() error {
 }
 
 func (g *Grafana) getDashboardByUid(uid string) (*DashboardFull, error) {
-	urlRes := strings.Trim(g.URL, "/") + "/api/dashboards/uid/" + uid
+	urlRes := strings.Trim(g.URL.UrlStr, "/") + "/api/dashboards/uid/" + uid
 	log.Println(urlRes)
 	dash := DashboardFull{}
 	req, err := g.NewGrafanaRequest(http.MethodGet, urlRes, nil)
