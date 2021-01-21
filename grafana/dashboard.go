@@ -25,39 +25,17 @@ func (p Panel) String() string {
 func (p *Panel) GetPanelIdWithGraph(grafana *Grafana, dashboard *DashboardFull) []*url.URL {
 	panelIDArray := make([]*url.URL, 0)
 
+	// log.Println(dashboard.Dashboard.Title)
+
 	//если Тип является графиком то выполнить деествия в урпавляющей конструкции
 	if p.Type == "graph" {
 		log.Println(p)
 		//Парсим юрл Юрл Графаны
-		resultUrl, err := url.Parse(grafana.URL)
-		if err != nil {
-			log.Println("Неверный формат URL GRAFANA")
-
-		}
+		resultUrl := grafana.URL.url
 
 		resultUrl.Path = strings.ReplaceAll(dashboard.Meta.URL, "/d", "/render/d-solo")
 		//формируем query для запроса
-		qr := resultUrl.Query()
-
-		// for _, v := range dashboard.Dashboard.Templating.List {
-		// 	// if v.UseTags == true {
-		// 	switch t := v.Current.Value.(type) {
-		// 	case []interface{}:
-		// 		log.Println("tag struct:", v, " array", t)
-
-		// 		for _, v1 := range t {
-		// 			qr.Add("var-"+v.Name, strings.Trim(v1.(string), "$__"))
-
-		// 		}
-		// 	case string:
-		// 		log.Println("tag struct:", v, " notarray", t)
-		// 		qr.Add("var-"+v.Name, strings.Trim(t, "$__"))
-		// 	default:
-		// 		log.Println("ERROR", t)
-
-		// 	}
-		// 	// }
-		// }
+		qr := url.Values{}
 
 		qr.Set("orgId", "1")
 		qr.Set("panelId", strconv.Itoa(p.Id))
@@ -71,7 +49,22 @@ func (p *Panel) GetPanelIdWithGraph(grafana *Grafana, dashboard *DashboardFull) 
 
 		resultUrl.RawQuery = qr.Encode()
 
+		// log.Println(reflect.TypeOf(qr))
+
 		log.Println(resultUrl.String())
+		for _, mapOfConfigs := range grafana.Config[dashboard.Dashboard.Title] {
+			log.Println("qr:", qr)
+			qrWithConfig := qr
+			// log.Println("index:", i, "value:", mapOfConfigs)
+			for key, val := range mapOfConfigs {
+				qrWithConfig.Add(key, val)
+			}
+			resultUrl.RawQuery = qrWithConfig.Encode()
+			log.Println("qrWithConfig", qrWithConfig)
+
+			log.Println(resultUrl.String())
+
+		}
 
 		panelIDArray = append(panelIDArray, resultUrl)
 	} else if len(p.Panels) != 0 {

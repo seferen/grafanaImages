@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"strings"
 )
 
 var client = &http.Client{}
@@ -48,9 +47,9 @@ func (g Grafana) String() string {
 
 func (g *Grafana) Search() error {
 
-	urlRes := g.URL.UrlStr + "/api/search/"
-	log.Println(urlRes)
-	req, err := g.NewGrafanaRequest(http.MethodGet, urlRes, nil)
+	// urlRes := g.URL.UrlStr + "/api/search/"
+	// log.Println(urlRes)
+	req, err := g.NewGrafanaRequest(http.MethodGet, "/api/search/", nil)
 	if err != nil {
 		return err
 	}
@@ -78,20 +77,19 @@ func (g *Grafana) Search() error {
 }
 
 func (g *Grafana) getDashboardByUid(uid string) (*DashboardFull, error) {
-	urlRes := strings.Trim(g.URL.UrlStr, "/") + "/api/dashboards/uid/" + uid
-	log.Println(urlRes)
+
 	dash := DashboardFull{}
-	req, err := g.NewGrafanaRequest(http.MethodGet, urlRes, nil)
+	req, err := g.NewGrafanaRequest(http.MethodGet, "/api/dashboards/uid/"+uid, nil)
 	if err != nil {
 		return nil, err
 	}
-	log.Println("Request:", urlRes, "was fomed")
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	log.Println("Request:", urlRes, "was recived")
 	defer resp.Body.Close()
+	log.Println("Request:", req, "was recived")
 
 	dec := json.NewDecoder(resp.Body)
 
@@ -99,7 +97,7 @@ func (g *Grafana) getDashboardByUid(uid string) (*DashboardFull, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Println("Request:", urlRes, "was write to dash as JSON")
+	log.Println("Request:", req, "was write to dash as JSON")
 	return &dash, nil
 
 }
@@ -116,9 +114,12 @@ func (g *Grafana) GetImages() error {
 	return nil
 }
 
-func (g *Grafana) NewGrafanaRequest(method, url string, body io.Reader) (*http.Request, error) {
-	req, err := http.NewRequest(method, url, body)
+func (g *Grafana) NewGrafanaRequest(method, endpoint string, body io.Reader) (*http.Request, error) {
+
+	log.Println("endpoint:", endpoint)
+	req, err := http.NewRequest(method, g.URL.url.String()+endpoint, body)
 	req.Header.Add("Authorization", "Bearer "+g.TOKEN)
+
 	return req, err
 
 }
