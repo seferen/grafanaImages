@@ -8,26 +8,6 @@ import (
 	"net/http"
 )
 
-var client = &http.Client{}
-
-const timeFormat string = "2006-01-02 15:04:05" //Mon Jan 2 15:04:05 MST 2006
-
-type dashboard struct {
-	ID        int      `json:"id"`
-	UID       string   `json:"uid"`
-	Title     string   `json:"title"`
-	URI       string   `json:"uri"`
-	URL       string   `json:"url"`
-	Slug      string   `json:"slug"`
-	Type      string   `json:"type"`
-	Tags      []string `json:"tags"`
-	IsStarred bool     `json:"isStarred"`
-}
-
-func (d dashboard) String() string {
-	return fmt.Sprintf("{id: %d, uid: %s, title: %s}", d.ID, d.UID, d.Title)
-}
-
 //Grafana config of Grafana structure
 type Grafana struct {
 	URL  Url `json:"url"`

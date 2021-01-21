@@ -6,78 +6,23 @@ import (
 	"log"
 	"net/url"
 	"strconv"
-	"strings"
 	"time"
 )
 
-type Panel struct {
-	Id          int     `json:"id"`
-	Title       string  `json:"Title"`
-	Type        string  `json:"type"`
-	Panels      []Panel `json:"panels"`
-	Transparent bool    `json:"transparent"`
+type dashboard struct {
+	ID        int      `json:"id"`
+	UID       string   `json:"uid"`
+	Title     string   `json:"title"`
+	URI       string   `json:"uri"`
+	URL       string   `json:"url"`
+	Slug      string   `json:"slug"`
+	Type      string   `json:"type"`
+	Tags      []string `json:"tags"`
+	IsStarred bool     `json:"isStarred"`
 }
 
-func (p Panel) String() string {
-	return fmt.Sprintf("{id: %d, title: %s, type: %s, panels: %v, transparent: %v}", p.Id, p.Title, p.Type, p.Panels, p.Transparent)
-}
-
-func (p *Panel) GetPanelIdWithGraph(grafana *Grafana, dashboard *DashboardFull) []*url.URL {
-	panelIDArray := make([]*url.URL, 0)
-
-	// log.Println(dashboard.Dashboard.Title)
-
-	//если Тип является графиком то выполнить деествия в урпавляющей конструкции
-	if p.Type == "graph" {
-		log.Println(p)
-		//Парсим юрл Юрл Графаны
-		resultUrl := grafana.URL.url
-
-		resultUrl.Path = strings.ReplaceAll(dashboard.Meta.URL, "/d", "/render/d-solo")
-		//формируем query для запроса
-		qr := url.Values{}
-
-		qr.Set("orgId", "1")
-		qr.Set("panelId", strconv.Itoa(p.Id))
-
-		qr.Set("from", parceTime(grafana.Test.TimeStart))
-		qr.Set("to", parceTime(grafana.Test.TimeEnd))
-		qr.Set("width", "1000")
-		qr.Set("height", "500")
-		qr.Set("tz", "Europe/Moscow")
-		qr.Set("timeout", "20")
-
-		resultUrl.RawQuery = qr.Encode()
-
-		// log.Println(reflect.TypeOf(qr))
-
-		log.Println(resultUrl.String())
-		for _, mapOfConfigs := range grafana.Config[dashboard.Dashboard.Title] {
-			log.Println("qr:", qr)
-			qrWithConfig := qr
-			// log.Println("index:", i, "value:", mapOfConfigs)
-			for key, val := range mapOfConfigs {
-				qrWithConfig.Add(key, val)
-			}
-			resultUrl.RawQuery = qrWithConfig.Encode()
-			log.Println("qrWithConfig", qrWithConfig)
-
-			log.Println(resultUrl.String())
-
-		}
-
-		panelIDArray = append(panelIDArray, resultUrl)
-	} else if len(p.Panels) != 0 {
-		for _, panel := range p.Panels {
-			test := panel.GetPanelIdWithGraph(grafana, dashboard)
-			// log.Println(">>>>", test)
-			panelIDArray = append(panelIDArray, test...)
-		}
-
-	}
-
-	return panelIDArray
-
+func (d dashboard) String() string {
+	return fmt.Sprintf("{id: %d, uid: %s, title: %s}", d.ID, d.UID, d.Title)
 }
 
 type Variables struct {
@@ -143,10 +88,13 @@ func (d *DashboardFull) GetUrls(grafana *Grafana) {
 
 }
 func parceTime(timeStr string) string {
-	resultTime, err := time.Parse(timeFormat, timeStr)
+	// log.Println("time:", timeStr)
+	resultTime, err := time.ParseInLocation(timeFormat, timeStr, time.Local)
 	if err != nil {
 		log.Println(err)
 	}
-	return strconv.FormatInt(resultTime.UnixNano()/1000000, 10)
+	result := strconv.FormatInt(resultTime.UnixNano()/1000000, 10)
+	// log.Println("timeresult:", result)
+	return result
 
 }
