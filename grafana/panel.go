@@ -2,7 +2,6 @@ package grafana
 
 import (
 	"fmt"
-	"log"
 	"net/url"
 	"strconv"
 	"strings"
@@ -20,8 +19,8 @@ func (p Panel) String() string {
 	return fmt.Sprintf("{id: %d, title: %s, type: %s, panels: %v, transparent: %v}", p.Id, p.Title, p.Type, p.Panels, p.Transparent)
 }
 
-func (p *Panel) GetPanelIdWithGraph(grafana *Grafana, dashboard *DashboardFull) []*url.URL {
-	panelIDArray := make([]*url.URL, 0)
+func (p *Panel) GetPanelIdWithGraph(grafana *Grafana, dashboard *DashboardFull) []fileUrl {
+	panelIDArray := make([]fileUrl, 0)
 
 	// log.Println(dashboard.Dashboard.Title)
 
@@ -50,7 +49,7 @@ func (p *Panel) GetPanelIdWithGraph(grafana *Grafana, dashboard *DashboardFull) 
 		// log.Println(reflect.TypeOf(qr))
 
 		// log.Println(resultUrl.String())
-		for _, mapOfConfigs := range grafana.Config[dashboard.Dashboard.Title] {
+		for i, mapOfConfigs := range grafana.Config[dashboard.Dashboard.Title] {
 			// log.Println("qr:", qr)
 			qrWithConfig := qr
 			// log.Println("index:", i, "value:", mapOfConfigs)
@@ -60,11 +59,15 @@ func (p *Panel) GetPanelIdWithGraph(grafana *Grafana, dashboard *DashboardFull) 
 			resultUrl.RawQuery = qrWithConfig.Encode()
 			// log.Println("qrWithConfig", qrWithConfig)
 
-			log.Println(resultUrl.String())
+			file := fileUrl{}
+			file.FileName = strings.ReplaceAll(fmt.Sprintf("%s_%d_%s.png", dashboard.Dashboard.Title, i, p.Title), " ", "_")
+			file.URL = resultUrl
+
+			// log.Println(resultUrl.String())
+			panelIDArray = append(panelIDArray, file)
 
 		}
 
-		panelIDArray = append(panelIDArray, resultUrl)
 	} else if len(p.Panels) != 0 {
 		for _, panel := range p.Panels {
 			test := panel.GetPanelIdWithGraph(grafana, dashboard)

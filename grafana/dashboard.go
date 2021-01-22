@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net/url"
 	"strconv"
 	"time"
 )
@@ -77,14 +76,13 @@ func (d DashboardFull) String() string {
 	return fmt.Sprintf("{title: %s}", d.Dashboard.Title)
 }
 
-func (d *DashboardFull) GetUrls(grafana *Grafana) {
-	urls := make([]*url.URL, 0)
+func (d *DashboardFull) GetUrls(grafana *Grafana) (urls []fileUrl) {
+	// urls := make([]fileUrl, 0)
 	for _, dash := range d.Dashboard.Panels {
 		urls = append(urls, dash.GetPanelIdWithGraph(grafana, d)...)
 	}
-	// for _, u := range urls {
-	// 	log.Println(u.String())
-	// }
+
+	return urls
 
 }
 func parceTime(timeStr string) string {

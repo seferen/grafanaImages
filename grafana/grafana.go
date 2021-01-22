@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 )
 
 //Grafana config of Grafana structure
@@ -29,7 +31,7 @@ func (g *Grafana) Search() error {
 
 	// urlRes := g.URL.UrlStr + "/api/search/"
 	// log.Println(urlRes)
-	req, err := g.NewGrafanaRequest(http.MethodGet, "/api/search/", nil)
+	req, err := g.NewGrafanaRequest(http.MethodGet, g.URL.url.String()+"/api/search/", nil)
 	if err != nil {
 		return err
 	}
@@ -59,7 +61,7 @@ func (g *Grafana) Search() error {
 func (g *Grafana) getDashboardByUid(uid string) (*DashboardFull, error) {
 
 	dash := DashboardFull{}
-	req, err := g.NewGrafanaRequest(http.MethodGet, "/api/dashboards/uid/"+uid, nil)
+	req, err := g.NewGrafanaRequest(http.MethodGet, g.URL.url.String()+"/api/dashboards/uid/"+uid, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -88,16 +90,40 @@ func (g *Grafana) GetImages() error {
 		if dashboard, err := g.getDashboardByUid(dash.UID); err != nil {
 			log.Println(err)
 		} else {
-			dashboard.GetUrls(g)
+			urls := dashboard.GetUrls(g)
+			for _, u := range urls {
+				log.Println(u.String())
+				req, err := g.NewGrafanaRequest(http.MethodGet, u.URL.String(), nil)
+				if err != nil {
+					log.Println(err)
+				}
+				resp, err := client.Do(req)
+				if err != nil {
+					log.Println(err)
+				}
+				defer resp.Body.Close()
+
+				if resp.Status == "200" {
+					forFile, err := ioutil.ReadAll(resp.Body)
+					if err != nil {
+						log.Println(err)
+					}
+					err = ioutil.WriteFile(u.FileName, forFile, os.ModeAppend)
+					if err != nil {
+						log.Println(err)
+					}
+				}
+
+			}
 		}
 	}
 	return nil
 }
 
-func (g *Grafana) NewGrafanaRequest(method, endpoint string, body io.Reader) (*http.Request, error) {
+func (g *Grafana) NewGrafanaRequest(method, Url string, body io.Reader) (*http.Request, error) {
 
-	log.Println("endpoint:", endpoint)
-	req, err := http.NewRequest(method, g.URL.url.String()+endpoint, body)
+	log.Println("Url:", Url)
+	req, err := http.NewRequest(method, Url, body)
 	req.Header.Add("Authorization", "Bearer "+g.TOKEN)
 
 	return req, err

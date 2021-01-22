@@ -2,6 +2,7 @@ package grafana
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/url"
 )
 
@@ -23,4 +24,13 @@ func (u *Url) UnmarshalJSON(b []byte) error {
 
 	return nil
 
+}
+
+type fileUrl struct {
+	FileName string
+	URL      *url.URL
+}
+
+func (f fileUrl) String() string {
+	return fmt.Sprintf("{fileName: %s, url: %s}", f.FileName, f.URL.String())
 }
