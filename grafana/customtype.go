@@ -27,10 +27,12 @@ func (u *Url) UnmarshalJSON(b []byte) error {
 }
 
 type fileUrl struct {
-	FileName string
-	URL      *url.URL
+	FileName    string
+	URL         *url.URL
+	respStatus  int
+	fileWriting bool
 }
 
 func (f fileUrl) String() string {
-	return fmt.Sprintf("{fileName: %s, url: %s}", f.FileName, f.URL.String())
+	return fmt.Sprintf("{fileName: %s, url: %s, Responce Status: %d, Writing file: %t}", f.FileName, f.URL.String(), f.respStatus, f.fileWriting)
 }

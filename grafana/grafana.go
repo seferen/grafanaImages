@@ -86,6 +86,7 @@ func (g *Grafana) getDashboardByUid(uid string) (*DashboardFull, error) {
 
 func (g *Grafana) GetImages() error {
 	for _, dash := range g.dashboards {
+		log.Println("Dashboard:", dash)
 
 		if dashboard, err := g.getDashboardByUid(dash.UID); err != nil {
 			log.Println(err)
@@ -102,8 +103,9 @@ func (g *Grafana) GetImages() error {
 					log.Println(err)
 				}
 				defer resp.Body.Close()
+				u.respStatus = resp.StatusCode
 
-				if resp.Status == "200" {
+				if resp.StatusCode == 200 {
 					forFile, err := ioutil.ReadAll(resp.Body)
 					if err != nil {
 						log.Println(err)
@@ -112,7 +114,10 @@ func (g *Grafana) GetImages() error {
 					if err != nil {
 						log.Println(err)
 					}
+					u.fileWriting = true
 				}
+
+				log.Println(u.String())
 
 			}
 		}

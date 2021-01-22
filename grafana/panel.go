@@ -2,6 +2,7 @@ package grafana
 
 import (
 	"fmt"
+	"log"
 	"net/url"
 	"strconv"
 	"strings"
@@ -28,7 +29,7 @@ func (p *Panel) GetPanelIdWithGraph(grafana *Grafana, dashboard *DashboardFull) 
 	if p.Type == "graph" {
 		// log.Println(p)
 		//Парсим юрл Юрл Графаны
-		resultUrl := grafana.URL.url
+		var resultUrl = *grafana.URL.url
 
 		resultUrl.Path = strings.ReplaceAll(dashboard.Meta.URL, "/d", "/render/d-solo")
 		//формируем query для запроса
@@ -44,24 +45,24 @@ func (p *Panel) GetPanelIdWithGraph(grafana *Grafana, dashboard *DashboardFull) 
 		qr.Set("tz", "Europe/Moscow")
 		qr.Set("timeout", "20")
 
-		resultUrl.RawQuery = qr.Encode()
+		// resultUrl.RawQuery = qr.Encode()
 
 		// log.Println(reflect.TypeOf(qr))
 
 		// log.Println(resultUrl.String())
 		for i, mapOfConfigs := range grafana.Config[dashboard.Dashboard.Title] {
-			// log.Println("qr:", qr)
+			log.Println("qr:", qr)
 			qrWithConfig := qr
 			// log.Println("index:", i, "value:", mapOfConfigs)
 			for key, val := range mapOfConfigs {
 				qrWithConfig.Add("var-"+key, val)
 			}
 			resultUrl.RawQuery = qrWithConfig.Encode()
-			// log.Println("qrWithConfig", qrWithConfig)
+			log.Println("qrWithConfig", qrWithConfig)
 
 			file := fileUrl{}
 			file.FileName = strings.ReplaceAll(fmt.Sprintf("%s_%d_%s.png", dashboard.Dashboard.Title, i, p.Title), " ", "_")
-			file.URL = resultUrl
+			file.URL = &resultUrl
 
 			// log.Println(resultUrl.String())
 			panelIDArray = append(panelIDArray, file)
