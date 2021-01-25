@@ -24,7 +24,7 @@ type Grafana struct {
 
 func (g Grafana) String() string {
 
-	return fmt.Sprintf("{url: %s, token: %s}", g.URL.UrlStr, g.TOKEN)
+	return fmt.Sprintf("Grafana: {url: %s, token: %s}", g.URL.UrlStr, g.TOKEN)
 }
 
 func (g *Grafana) Search() error {
@@ -93,31 +93,8 @@ func (g *Grafana) GetImages() error {
 		} else {
 			urls := dashboard.GetUrls(g)
 			for _, u := range urls {
-				log.Println(u.String())
-				req, err := g.NewGrafanaRequest(http.MethodGet, u.URL.String(), nil)
-				if err != nil {
-					log.Println(err)
-				}
-				resp, err := client.Do(req)
-				if err != nil {
-					log.Println(err)
-				}
-				defer resp.Body.Close()
-				u.respStatus = resp.StatusCode
 
-				if resp.StatusCode == 200 {
-					forFile, err := ioutil.ReadAll(resp.Body)
-					if err != nil {
-						log.Println(err)
-					}
-					err = ioutil.WriteFile(u.FileName, forFile, os.ModeAppend)
-					if err != nil {
-						log.Println(err)
-					}
-					u.fileWriting = true
-				}
-
-				log.Println(u.String())
+				g.downloadFile(&u)
 
 			}
 		}
@@ -132,5 +109,48 @@ func (g *Grafana) NewGrafanaRequest(method, Url string, body io.Reader) (*http.R
 	req.Header.Add("Authorization", "Bearer "+g.TOKEN)
 
 	return req, err
+
+}
+
+func (g *Grafana) downloadFile(u *fileUrl) {
+	req, err := g.NewGrafanaRequest(http.MethodGet, u.URL.String(), nil)
+	if err != nil {
+		log.Println(err)
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println(err)
+	}
+	defer resp.Body.Close()
+	u.respStatus = resp.StatusCode
+
+	if resp.StatusCode == 200 {
+		forFile, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Println(err)
+		}
+		writeFile(forFile, u, ".png")
+
+	}
+
+	log.Println(u.String())
+
+}
+
+func writeFile(fileData []byte, u *fileUrl, endFile string) {
+	err := ioutil.WriteFile(fmt.Sprintf("%s%s%s", "result/", u.FileName, endFile), fileData, os.ModeAppend)
+	n := 0
+	for err != nil {
+
+		fileName := fmt.Sprintf("%s_%d", u.FileName, n)
+		err = ioutil.WriteFile(fmt.Sprintf("%s%s%s", "result/", fileName, endFile), fileData, os.ModeAppend)
+		if err != nil {
+			u.FileName = fileName
+			break
+		}
+		n = n + 1
+
+	}
+	u.fileWriting = true
 
 }

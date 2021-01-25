@@ -34,5 +34,5 @@ type fileUrl struct {
 }
 
 func (f fileUrl) String() string {
-	return fmt.Sprintf("{fileName: %s, url: %s, Responce Status: %d, Writing file: %t}", f.FileName, f.URL.String(), f.respStatus, f.fileWriting)
+	return fmt.Sprintf("fileUrl: {fileName: %s, url: %s, Responce Status: %d, Writing file: %t}", f.FileName, f.URL.String(), f.respStatus, f.fileWriting)
 }

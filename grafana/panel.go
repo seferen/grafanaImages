@@ -17,7 +17,7 @@ type Panel struct {
 }
 
 func (p Panel) String() string {
-	return fmt.Sprintf("{id: %d, title: %s, type: %s, panels: %v, transparent: %v}", p.Id, p.Title, p.Type, p.Panels, p.Transparent)
+	return fmt.Sprintf("Panel: {id: %d, title: %s, type: %s, panels: %v, transparent: %v}", p.Id, p.Title, p.Type, p.Panels, p.Transparent)
 }
 
 func (p *Panel) GetPanelIdWithGraph(grafana *Grafana, dashboard *DashboardFull) []fileUrl {
@@ -61,7 +61,8 @@ func (p *Panel) GetPanelIdWithGraph(grafana *Grafana, dashboard *DashboardFull) 
 			log.Println("qrWithConfig", qrWithConfig)
 
 			file := fileUrl{}
-			file.FileName = strings.ReplaceAll(fmt.Sprintf("%s_%d_%s.png", dashboard.Dashboard.Title, i, p.Title), " ", "_")
+
+			file.FileName = re.ReplaceAllString(fmt.Sprintf("%s_%d_%s", dashboard.Dashboard.Title, i, p.Title), "_")
 			file.URL = &resultUrl
 
 			// log.Println(resultUrl.String())

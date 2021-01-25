@@ -21,7 +21,7 @@ type dashboard struct {
 }
 
 func (d dashboard) String() string {
-	return fmt.Sprintf("{id: %d, uid: %s, title: %s}", d.ID, d.UID, d.Title)
+	return fmt.Sprintf("dashboard: {id: %d, uid: %s, title: %s}", d.ID, d.UID, d.Title)
 }
 
 type Variables struct {
@@ -73,7 +73,7 @@ type DashboardFull struct {
 }
 
 func (d DashboardFull) String() string {
-	return fmt.Sprintf("{title: %s}", d.Dashboard.Title)
+	return fmt.Sprintf("DashboardFull: {title: %s}", d.Dashboard.Title)
 }
 
 func (d *DashboardFull) GetUrls(grafana *Grafana) (urls []fileUrl) {
