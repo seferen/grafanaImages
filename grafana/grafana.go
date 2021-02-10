@@ -10,7 +10,7 @@ import (
 	"os"
 )
 
-//Grafana config of Grafana structure
+//Grafana config of Grafana structure hold all configurations needed for a work of the application.
 type Grafana struct {
 	URL  Url `json:"url"`
 	Test struct {
@@ -27,10 +27,9 @@ func (g Grafana) String() string {
 	return fmt.Sprintf("Grafana: {url: %s, token: %s}", g.URL.UrlStr, g.TOKEN)
 }
 
+//Search - function that used the API Grafana from it documentation and insert into the Grafana struct dashboards with information about elements
 func (g *Grafana) Search() error {
 
-	// urlRes := g.URL.UrlStr + "/api/search/"
-	// log.Println(urlRes)
 	req, err := g.NewGrafanaRequest(http.MethodGet, g.URL.url.String()+"/api/search/", nil)
 	if err != nil {
 		return err
@@ -71,6 +70,7 @@ func (g *Grafana) getDashboardByUid(uid string) (*DashboardFull, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
+
 	log.Println("Request:", req, "was recived")
 
 	dec := json.NewDecoder(resp.Body)
@@ -85,6 +85,20 @@ func (g *Grafana) getDashboardByUid(uid string) (*DashboardFull, error) {
 }
 
 func (g *Grafana) GetImages() error {
+
+	downChan := make(chan *fileUrl, 2)
+
+	go func() {
+		log.Println("chan was started")
+		for {
+			select {
+			case x := <-downChan:
+				g.downloadFile(x)
+
+			}
+		}
+	}()
+
 	for _, dash := range g.dashboards {
 		log.Println("Dashboard:", dash)
 
@@ -94,11 +108,14 @@ func (g *Grafana) GetImages() error {
 			urls := dashboard.GetUrls(g)
 			for _, u := range urls {
 
-				g.downloadFile(&u)
+				downChan <- &u
+
+				// g.downloadFile(&u)
 
 			}
 		}
 	}
+	close(downChan)
 	return nil
 }
 
@@ -113,6 +130,7 @@ func (g *Grafana) NewGrafanaRequest(method, Url string, body io.Reader) (*http.R
 }
 
 func (g *Grafana) downloadFile(u *fileUrl) {
+	log.Println("START DOWNLOAD:", u.String())
 	req, err := g.NewGrafanaRequest(http.MethodGet, u.URL.String(), nil)
 	if err != nil {
 		log.Println(err)
@@ -133,7 +151,7 @@ func (g *Grafana) downloadFile(u *fileUrl) {
 
 	}
 
-	log.Println(u.String())
+	log.Println("STOP DOWNLOAD:", u.String())
 
 }
 

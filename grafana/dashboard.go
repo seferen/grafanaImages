@@ -86,13 +86,11 @@ func (d *DashboardFull) GetUrls(grafana *Grafana) (urls []fileUrl) {
 
 }
 func parceTime(timeStr string) string {
-	// log.Println("time:", timeStr)
 	resultTime, err := time.ParseInLocation(timeFormat, timeStr, time.Local)
 	if err != nil {
 		log.Println(err)
 	}
 	result := strconv.FormatInt(resultTime.UnixNano()/1000000, 10)
-	// log.Println("timeresult:", result)
 	return result
 
 }
