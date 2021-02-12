@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net/url"
 	"strconv"
 	"time"
 )
@@ -22,7 +21,7 @@ type dashboard struct {
 }
 
 func (d dashboard) String() string {
-	return fmt.Sprintf("{id: %d, uid: %s, title: %s}", d.ID, d.UID, d.Title)
+	return fmt.Sprintf("dashboard: {id: %d, uid: %s, title: %s}", d.ID, d.UID, d.Title)
 }
 
 type Variables struct {
@@ -74,27 +73,24 @@ type DashboardFull struct {
 }
 
 func (d DashboardFull) String() string {
-	return fmt.Sprintf("{title: %s}", d.Dashboard.Title)
+	return fmt.Sprintf("DashboardFull: {title: %s}", d.Dashboard.Title)
 }
 
-func (d *DashboardFull) GetUrls(grafana *Grafana) {
-	urls := make([]*url.URL, 0)
+func (d *DashboardFull) GetUrls(grafana *Grafana) (urls []fileUrl) {
+	// urls := make([]fileUrl, 0)
 	for _, dash := range d.Dashboard.Panels {
 		urls = append(urls, dash.GetPanelIdWithGraph(grafana, d)...)
 	}
-	// for _, u := range urls {
-	// 	log.Println(u.String())
-	// }
+
+	return urls
 
 }
 func parceTime(timeStr string) string {
-	// log.Println("time:", timeStr)
 	resultTime, err := time.ParseInLocation(timeFormat, timeStr, time.Local)
 	if err != nil {
 		log.Println(err)
 	}
 	result := strconv.FormatInt(resultTime.UnixNano()/1000000, 10)
-	// log.Println("timeresult:", result)
 	return result
 
 }

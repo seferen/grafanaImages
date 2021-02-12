@@ -17,11 +17,11 @@ type Panel struct {
 }
 
 func (p Panel) String() string {
-	return fmt.Sprintf("{id: %d, title: %s, type: %s, panels: %v, transparent: %v}", p.Id, p.Title, p.Type, p.Panels, p.Transparent)
+	return fmt.Sprintf("Panel: {id: %d, title: %s, type: %s, panels: %v, transparent: %v}", p.Id, p.Title, p.Type, p.Panels, p.Transparent)
 }
 
-func (p *Panel) GetPanelIdWithGraph(grafana *Grafana, dashboard *DashboardFull) []*url.URL {
-	panelIDArray := make([]*url.URL, 0)
+func (p *Panel) GetPanelIdWithGraph(grafana *Grafana, dashboard *DashboardFull) []fileUrl {
+	panelIDArray := make([]fileUrl, 0)
 
 	// log.Println(dashboard.Dashboard.Title)
 
@@ -29,7 +29,7 @@ func (p *Panel) GetPanelIdWithGraph(grafana *Grafana, dashboard *DashboardFull) 
 	if p.Type == "graph" {
 		// log.Println(p)
 		//Парсим юрл Юрл Графаны
-		resultUrl := grafana.URL.url
+		var resultUrl = *grafana.URL.url
 
 		resultUrl.Path = strings.ReplaceAll(dashboard.Meta.URL, "/d", "/render/d-solo")
 		//формируем query для запроса
@@ -45,26 +45,31 @@ func (p *Panel) GetPanelIdWithGraph(grafana *Grafana, dashboard *DashboardFull) 
 		qr.Set("tz", "Europe/Moscow")
 		qr.Set("timeout", "20")
 
-		resultUrl.RawQuery = qr.Encode()
+		// resultUrl.RawQuery = qr.Encode()
 
 		// log.Println(reflect.TypeOf(qr))
 
 		// log.Println(resultUrl.String())
-		for _, mapOfConfigs := range grafana.Config[dashboard.Dashboard.Title] {
-			// log.Println("qr:", qr)
+		for i, mapOfConfigs := range grafana.Config[dashboard.Dashboard.Title] {
+			log.Println("qr:", qr)
 			qrWithConfig := qr
 			// log.Println("index:", i, "value:", mapOfConfigs)
 			for key, val := range mapOfConfigs {
 				qrWithConfig.Add("var-"+key, val)
 			}
 			resultUrl.RawQuery = qrWithConfig.Encode()
-			// log.Println("qrWithConfig", qrWithConfig)
+			log.Println("qrWithConfig", qrWithConfig)
 
-			log.Println(resultUrl.String())
+			file := fileUrl{}
+
+			file.FileName = re.ReplaceAllString(fmt.Sprintf("%s_%d_%s", dashboard.Dashboard.Title, i, p.Title), "_")
+			file.URL = &resultUrl
+
+			// log.Println(resultUrl.String())
+			panelIDArray = append(panelIDArray, file)
 
 		}
 
-		panelIDArray = append(panelIDArray, resultUrl)
 	} else if len(p.Panels) != 0 {
 		for _, panel := range p.Panels {
 			test := panel.GetPanelIdWithGraph(grafana, dashboard)
