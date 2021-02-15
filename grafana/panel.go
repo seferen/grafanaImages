@@ -50,13 +50,29 @@ func (p *Panel) GetPanelIdWithGraph(grafana *Grafana, dashboard *DashboardFull) 
 		// log.Println(reflect.TypeOf(qr))
 
 		// log.Println(resultUrl.String())
-		for i, mapOfConfigs := range grafana.Config[dashboard.Dashboard.Title] {
-			log.Println("qr:", qr)
-			qrWithConfig := qr
-			// log.Println("index:", i, "value:", mapOfConfigs)
-			for key, val := range mapOfConfigs {
-				qrWithConfig.Add("var-"+key, val)
+		if ls := grafana.Config[dashboard.Dashboard.Title]; len(ls) != 0 {
+
+			for i, mapOfConfigs := range ls {
+				log.Println("qr:", qr)
+				qrWithConfig := qr
+				// log.Println("index:", i, "value:", mapOfConfigs)
+				for key, val := range mapOfConfigs {
+					qrWithConfig.Add("var-"+key, val)
+				}
+				resultUrl.RawQuery = qrWithConfig.Encode()
+				log.Println("qrWithConfig", qrWithConfig)
+
+				file := fileUrl{}
+
+				file.FileName = re.ReplaceAllString(fmt.Sprintf("%s_%d_%s", dashboard.Dashboard.Title, i, p.Title), "_")
+				file.URL = &resultUrl
+
+				// log.Println(resultUrl.String())
+				panelIDArray = append(panelIDArray, file)
+
 			}
+		} else {
+			qrWithConfig := qr
 			resultUrl.RawQuery = qrWithConfig.Encode()
 			log.Println("qrWithConfig", qrWithConfig)
 

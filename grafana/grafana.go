@@ -159,6 +159,7 @@ func writeFile(fileData []byte, u *fileUrl, endFile string) {
 	err := ioutil.WriteFile(fmt.Sprintf("%s%s%s", "result/", u.FileName, endFile), fileData, os.ModeAppend)
 	n := 0
 	for err != nil {
+		log.Panicln("fileName for write:", u.FileName)
 
 		fileName := fmt.Sprintf("%s_%d", u.FileName, n)
 		err = ioutil.WriteFile(fmt.Sprintf("%s%s%s", "result/", fileName, endFile), fileData, os.ModeAppend)
