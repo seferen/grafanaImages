@@ -78,7 +78,7 @@ func (p *Panel) GetPanelIdWithGraph(grafana *Grafana, dashboard *DashboardFull) 
 
 			file := fileUrl{}
 
-			file.FileName = re.ReplaceAllString(fmt.Sprintf("%s_%d_%s", dashboard.Dashboard.Title, i, p.Title), "_")
+			file.FileName = re.ReplaceAllString(fmt.Sprintf("%s_%s", dashboard.Dashboard.Title, p.Title), "_")
 			file.URL = &resultUrl
 
 			// log.Println(resultUrl.String())
