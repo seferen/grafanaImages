@@ -19,7 +19,7 @@ type Grafana struct {
 	} `json:"test"`
 	TOKEN      string                         `json:"token"`
 	Config     map[string][]map[string]string `json:"dashboards"`
-	dashboards []dashboard
+	Dashboards []Dashboard
 }
 
 func (g Grafana) String() string {
@@ -28,36 +28,29 @@ func (g Grafana) String() string {
 }
 
 //Search - function that used the API Grafana from it documentation and insert into the Grafana struct dashboards with information about elements
-func (g *Grafana) Search() error {
+func (g *Grafana) Search() ([]Dashboard, error) {
 
 	req, err := g.NewGrafanaRequest(http.MethodGet, g.URL.url.String()+"/api/search/", nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
-	result := make([]dashboard, 10)
+	result := make([]Dashboard, 10)
 	dec := json.NewDecoder(resp.Body)
 	err = dec.Decode(&result)
 	if err != nil {
 		log.Println(err)
 	}
 
-	for _, dash := range result {
-		if _, b := g.Config[dash.Title]; b {
-			g.dashboards = append(g.dashboards, dash)
-		}
-	}
-	log.Println("Result dashboards:", g.dashboards)
-
-	return nil
+	return result, nil
 }
 
-func (g *Grafana) getDashboardByUid(uid string) (*DashboardFull, error) {
+func (g *Grafana) GetDashboardByUid(uid string) (*DashboardFull, error) {
 
 	dash := DashboardFull{}
 	req, err := g.NewGrafanaRequest(http.MethodGet, g.URL.url.String()+"/api/dashboards/uid/"+uid, nil)
@@ -84,40 +77,40 @@ func (g *Grafana) getDashboardByUid(uid string) (*DashboardFull, error) {
 
 }
 
-func (g *Grafana) GetImages() error {
+// func (g *Grafana) GetImages() error {
 
-	downChan := make(chan *fileUrl, 2)
+// 	downChan := make(chan *fileUrl, 2)
 
-	go func() {
-		log.Println("chan was started")
-		for {
-			select {
-			case x := <-downChan:
-				g.downloadFile(x)
+// 	go func() {
+// 		log.Println("chan was started")
+// 		for {
+// 			select {
+// 			case x := <-downChan:
+// 				g.DownloadFile(x)
 
-			}
-		}
-	}()
+// 			}
+// 		}
+// 	}()
 
-	for _, dash := range g.dashboards {
-		log.Println("Dashboard:", dash)
+// 	for _, dash := range g.Dashboards {
+// 		log.Println("Dashboard:", dash)
 
-		if dashboard, err := g.getDashboardByUid(dash.UID); err != nil {
-			log.Println(err)
-		} else {
-			urls := dashboard.GetUrls(g)
-			for _, u := range urls {
+// 		if dashboard, err := g.GetDashboardByUid(dash.UID); err != nil {
+// 			log.Println(err)
+// 		} else {
+// 			urls := dashboard.GetUrls(g)
+// 			for _, u := range urls {
 
-				downChan <- &u
+// 				downChan <- &u
 
-				// g.downloadFile(&u)
+// 				// g.downloadFile(&u)
 
-			}
-		}
-	}
-	close(downChan)
-	return nil
-}
+// 			}
+// 		}
+// 	}
+// 	close(downChan)
+// 	return nil
+// }
 
 func (g *Grafana) NewGrafanaRequest(method, Url string, body io.Reader) (*http.Request, error) {
 
@@ -129,7 +122,7 @@ func (g *Grafana) NewGrafanaRequest(method, Url string, body io.Reader) (*http.R
 
 }
 
-func (g *Grafana) downloadFile(u *fileUrl) {
+func (g *Grafana) DownloadFile(u *FileUrl) {
 	log.Println("START DOWNLOAD:", u.String())
 	req, err := g.NewGrafanaRequest(http.MethodGet, u.URL.String(), nil)
 	if err != nil {
@@ -155,7 +148,7 @@ func (g *Grafana) downloadFile(u *fileUrl) {
 
 }
 
-func writeFile(fileData []byte, u *fileUrl, endFile string) {
+func writeFile(fileData []byte, u *FileUrl, endFile string) {
 	err := ioutil.WriteFile(fmt.Sprintf("%s%s%s", "result/", u.FileName, endFile), fileData, os.ModeAppend)
 	n := 0
 	for err != nil {
