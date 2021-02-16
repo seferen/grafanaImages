@@ -18,7 +18,7 @@ func main() {
 			select {
 			case x := <-downChan:
 				log.Println(">>>>>", x)
-				// graf.DownloadFile(x)
+				graf.DownloadFile(x)
 
 			}
 		}
