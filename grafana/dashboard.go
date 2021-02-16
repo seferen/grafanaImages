@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-type dashboard struct {
+type Dashboard struct {
 	ID        int      `json:"id"`
 	UID       string   `json:"uid"`
 	Title     string   `json:"title"`
@@ -20,7 +20,7 @@ type dashboard struct {
 	IsStarred bool     `json:"isStarred"`
 }
 
-func (d dashboard) String() string {
+func (d Dashboard) String() string {
 	return fmt.Sprintf("dashboard: {id: %d, uid: %s, title: %s}", d.ID, d.UID, d.Title)
 }
 
@@ -76,15 +76,6 @@ func (d DashboardFull) String() string {
 	return fmt.Sprintf("DashboardFull: {title: %s}", d.Dashboard.Title)
 }
 
-func (d *DashboardFull) GetUrls(grafana *Grafana) (urls []fileUrl) {
-	// urls := make([]fileUrl, 0)
-	for _, dash := range d.Dashboard.Panels {
-		urls = append(urls, dash.GetPanelIdWithGraph(grafana, d)...)
-	}
-
-	return urls
-
-}
 func parceTime(timeStr string) string {
 	resultTime, err := time.ParseInLocation(timeFormat, timeStr, time.Local)
 	if err != nil {

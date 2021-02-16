@@ -20,10 +20,7 @@ func (p Panel) String() string {
 	return fmt.Sprintf("Panel: {id: %d, title: %s, type: %s, panels: %v, transparent: %v}", p.Id, p.Title, p.Type, p.Panels, p.Transparent)
 }
 
-func (p *Panel) GetPanelIdWithGraph(grafana *Grafana, dashboard *DashboardFull) []fileUrl {
-	panelIDArray := make([]fileUrl, 0)
-
-	// log.Println(dashboard.Dashboard.Title)
+func (p *Panel) GetPanelIdWithGraph(grafana *Grafana, dashboard *DashboardFull, down chan *FileUrl) {
 
 	//если Тип является графиком то выполнить деествия в урпавляющей конструкции
 	if p.Type == "graph" {
@@ -45,30 +42,24 @@ func (p *Panel) GetPanelIdWithGraph(grafana *Grafana, dashboard *DashboardFull) 
 		qr.Set("tz", "Europe/Moscow")
 		qr.Set("timeout", "20")
 
-		// resultUrl.RawQuery = qr.Encode()
-
-		// log.Println(reflect.TypeOf(qr))
-
-		// log.Println(resultUrl.String())
 		if ls := grafana.Config[dashboard.Dashboard.Title]; len(ls) != 0 {
 
 			for i, mapOfConfigs := range ls {
 				log.Println("qr:", qr)
 				qrWithConfig := qr
-				// log.Println("index:", i, "value:", mapOfConfigs)
+
 				for key, val := range mapOfConfigs {
 					qrWithConfig.Add("var-"+key, val)
 				}
 				resultUrl.RawQuery = qrWithConfig.Encode()
 				log.Println("qrWithConfig", qrWithConfig)
 
-				file := fileUrl{}
+				file := FileUrl{}
 
 				file.FileName = re.ReplaceAllString(fmt.Sprintf("%s_%d_%s", dashboard.Dashboard.Title, i, p.Title), "_")
 				file.URL = &resultUrl
 
-				// log.Println(resultUrl.String())
-				panelIDArray = append(panelIDArray, file)
+				down <- &file
 
 			}
 		} else {
@@ -76,25 +67,20 @@ func (p *Panel) GetPanelIdWithGraph(grafana *Grafana, dashboard *DashboardFull) 
 			resultUrl.RawQuery = qrWithConfig.Encode()
 			log.Println("qrWithConfig", qrWithConfig)
 
-			file := fileUrl{}
+			file := FileUrl{}
 
 			file.FileName = re.ReplaceAllString(fmt.Sprintf("%s_%s", dashboard.Dashboard.Title, p.Title), "_")
 			file.URL = &resultUrl
 
-			// log.Println(resultUrl.String())
-			panelIDArray = append(panelIDArray, file)
+			down <- &file
 
 		}
 
 	} else if len(p.Panels) != 0 {
 		for _, panel := range p.Panels {
-			test := panel.GetPanelIdWithGraph(grafana, dashboard)
-			// log.Println(">>>>", test)
-			panelIDArray = append(panelIDArray, test...)
+			panel.GetPanelIdWithGraph(grafana, dashboard, down)
 		}
 
 	}
-
-	return panelIDArray
 
 }
