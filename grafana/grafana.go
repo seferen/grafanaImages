@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 )
 
 //Grafana config of Grafana structure hold all configurations needed for a work of the application.
@@ -149,13 +150,13 @@ func (g *Grafana) DownloadFile(u *FileUrl) {
 }
 
 func writeFile(fileData []byte, u *FileUrl, endFile string) {
-	err := ioutil.WriteFile(fmt.Sprintf("%s%s%s", "result/", u.FileName, endFile), fileData, os.ModeAppend)
+	err := ioutil.WriteFile(filepath.Join(dir, u.FileName+endFile), fileData, os.ModeAppend)
 	n := 0
 	for err != nil {
 		log.Println("fileName for write:", u.FileName)
 
 		fileName := fmt.Sprintf("%s_%d", u.FileName, n)
-		err = ioutil.WriteFile(fmt.Sprintf("%s%s%s", "result/", fileName, endFile), fileData, os.ModeAppend)
+		err = ioutil.WriteFile(filepath.Join(dir, u.FileName+endFile), fileData, os.ModeAppend)
 		if err != nil {
 			u.FileName = fileName
 			break
