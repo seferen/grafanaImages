@@ -1,16 +1,21 @@
 package main
 
 import (
+	"flag"
 	"log"
 
 	"./config"
 	"./grafana"
 )
 
+var (
+	configFile *string
+)
+
 func main() {
 	downChan := make(chan *grafana.FileUrl)
 	graf := grafana.Grafana{}
-	config.GetConfigFromFile("config.json", &graf)
+	config.GetConfigFromFile(*configFile, &graf)
 
 	go func() {
 		log.Println("chan was started")
@@ -46,5 +51,12 @@ func main() {
 	}
 	close(downChan)
 	log.Println("Channel was closed")
+
+}
+
+func init() {
+	log.Println("Main init")
+	configFile = flag.String("fileConfig", "config.json", "")
+	flag.Parse()
 
 }

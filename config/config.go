@@ -10,14 +10,14 @@ import (
 func GetConfigFromFile(fileName string, configStruct interface{}) {
 	file, err := os.Open(fileName)
 	if err != nil {
-		log.Panicln(err)
+		log.Fatalln(err)
 	}
 	defer file.Close()
 	dec := json.NewDecoder(file)
 	dec.Decode(configStruct)
 	if err != nil {
-		log.Println(err)
+		log.Fatal(err)
 	}
-	log.Println(configStruct)
+	log.Println("file", fileName, "was readed.", configStruct)
 
 }
