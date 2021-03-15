@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 )
 
 //Grafana config of Grafana structure hold all configurations needed for a work of the application.
@@ -77,41 +78,6 @@ func (g *Grafana) GetDashboardByUid(uid string) (*DashboardFull, error) {
 
 }
 
-// func (g *Grafana) GetImages() error {
-
-// 	downChan := make(chan *fileUrl, 2)
-
-// 	go func() {
-// 		log.Println("chan was started")
-// 		for {
-// 			select {
-// 			case x := <-downChan:
-// 				g.DownloadFile(x)
-
-// 			}
-// 		}
-// 	}()
-
-// 	for _, dash := range g.Dashboards {
-// 		log.Println("Dashboard:", dash)
-
-// 		if dashboard, err := g.GetDashboardByUid(dash.UID); err != nil {
-// 			log.Println(err)
-// 		} else {
-// 			urls := dashboard.GetUrls(g)
-// 			for _, u := range urls {
-
-// 				downChan <- &u
-
-// 				// g.downloadFile(&u)
-
-// 			}
-// 		}
-// 	}
-// 	close(downChan)
-// 	return nil
-// }
-
 func (g *Grafana) NewGrafanaRequest(method, Url string, body io.Reader) (*http.Request, error) {
 
 	log.Println("Url:", Url)
@@ -122,6 +88,7 @@ func (g *Grafana) NewGrafanaRequest(method, Url string, body io.Reader) (*http.R
 
 }
 
+// DownloadFile function for downloading of a file from url from information about FileUrl
 func (g *Grafana) DownloadFile(u *FileUrl) {
 	log.Println("START DOWNLOAD:", u.String())
 	req, err := g.NewGrafanaRequest(http.MethodGet, u.URL.String(), nil)
@@ -149,13 +116,13 @@ func (g *Grafana) DownloadFile(u *FileUrl) {
 }
 
 func writeFile(fileData []byte, u *FileUrl, endFile string) {
-	err := ioutil.WriteFile(fmt.Sprintf("%s%s%s", "result/", u.FileName, endFile), fileData, os.ModeAppend)
+	err := ioutil.WriteFile(filepath.Join(*Dir, *Prefix+u.FileName+endFile), fileData, os.ModeAppend)
 	n := 0
 	for err != nil {
 		log.Println("fileName for write:", u.FileName)
 
 		fileName := fmt.Sprintf("%s_%d", u.FileName, n)
-		err = ioutil.WriteFile(fmt.Sprintf("%s%s%s", "result/", fileName, endFile), fileData, os.ModeAppend)
+		err = ioutil.WriteFile(filepath.Join(*Dir, *Prefix+u.FileName+endFile), fileData, os.ModeAppend)
 		if err != nil {
 			u.FileName = fileName
 			break

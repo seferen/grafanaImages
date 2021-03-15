@@ -26,33 +26,48 @@ func (p *Panel) GetPanelIdWithGraph(grafana *Grafana, dashboard *DashboardFull, 
 	if p.Type == "graph" {
 		// log.Println(p)
 		//Парсим юрл Юрл Графаны
-		var resultUrl = *grafana.URL.url
 
-		resultUrl.Path = strings.ReplaceAll(dashboard.Meta.URL, "/d", "/render/d-solo")
 		//формируем query для запроса
-		qr := url.Values{}
+		// qr := url.Values{}
 
-		qr.Set("orgId", "1")
-		qr.Set("panelId", strconv.Itoa(p.Id))
+		// qr.Set("orgId", "1")
+		// qr.Set("panelId", strconv.Itoa(p.Id))
 
-		qr.Set("from", parceTime(grafana.Test.TimeStart))
-		qr.Set("to", parceTime(grafana.Test.TimeEnd))
-		qr.Set("width", "1000")
-		qr.Set("height", "500")
-		qr.Set("tz", "Europe/Moscow")
-		qr.Set("timeout", "20")
+		// qr.Set("from", parceTime(grafana.Test.TimeStart))
+		// qr.Set("to", parceTime(grafana.Test.TimeEnd))
+		// qr.Set("width", "1000")
+		// qr.Set("height", "500")
+		// qr.Set("tz", "Europe/Moscow")
+		// qr.Set("timeout", "20")
 
 		if ls := grafana.Config[dashboard.Dashboard.Title]; len(ls) != 0 {
 
 			for i, mapOfConfigs := range ls {
-				log.Println("qr:", qr)
-				qrWithConfig := qr
+				var resultUrl = *grafana.URL.url
+
+				resultUrl.Path = strings.ReplaceAll(dashboard.Meta.URL, "/d", "/render/d-solo")
+				qr := url.Values{}
+
+				qr.Set("orgId", "1")
+				qr.Set("panelId", strconv.Itoa(p.Id))
+
+				qr.Set("from", parceTime(grafana.Test.TimeStart))
+				qr.Set("to", parceTime(grafana.Test.TimeEnd))
+				qr.Set("width", "1000")
+				qr.Set("height", "500")
+				qr.Set("tz", "Europe/Moscow")
+				qr.Set("timeout", "20")
+
+				// qrWithConfig := url.Values{}
+				// qrWithConfig = qr
 
 				for key, val := range mapOfConfigs {
-					qrWithConfig.Add("var-"+key, val)
+					qr.Add("var-"+key, val)
 				}
-				resultUrl.RawQuery = qrWithConfig.Encode()
-				log.Println("qrWithConfig", qrWithConfig)
+				log.Println("qr:", qr)
+
+				resultUrl.RawQuery = qr.Encode()
+				log.Println("qrWithConfig", qr)
 
 				file := FileUrl{}
 
@@ -63,9 +78,22 @@ func (p *Panel) GetPanelIdWithGraph(grafana *Grafana, dashboard *DashboardFull, 
 
 			}
 		} else {
-			qrWithConfig := qr
-			resultUrl.RawQuery = qrWithConfig.Encode()
-			log.Println("qrWithConfig", qrWithConfig)
+			var resultUrl = *grafana.URL.url
+
+			resultUrl.Path = strings.ReplaceAll(dashboard.Meta.URL, "/d", "/render/d-solo")
+			qr := url.Values{}
+
+			qr.Set("orgId", "1")
+			qr.Set("panelId", strconv.Itoa(p.Id))
+
+			qr.Set("from", parceTime(grafana.Test.TimeStart))
+			qr.Set("to", parceTime(grafana.Test.TimeEnd))
+			qr.Set("width", "1000")
+			qr.Set("height", "500")
+			qr.Set("tz", "Europe/Moscow")
+			qr.Set("timeout", "20")
+			resultUrl.RawQuery = qr.Encode()
+			log.Println("qrWithConfig", qr)
 
 			file := FileUrl{}
 

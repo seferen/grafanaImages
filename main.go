@@ -1,16 +1,23 @@
 package main
 
 import (
+	"flag"
 	"log"
+	"os"
 
 	"./config"
 	"./grafana"
 )
 
+var (
+	configFile *string
+	prefix     *string
+)
+
 func main() {
 	downChan := make(chan *grafana.FileUrl)
 	graf := grafana.Grafana{}
-	config.GetConfigFromFile("config.json", &graf)
+	config.GetConfigFromFile(*configFile, &graf)
 
 	go func() {
 		log.Println("chan was started")
@@ -46,5 +53,22 @@ func main() {
 	}
 	close(downChan)
 	log.Println("Channel was closed")
+
+}
+
+func init() {
+	// log.Println("Main init")
+	configFile = flag.String("f", "config.json", "a file with configeration for app")
+	grafana.Dir = flag.String("dir", "result", "configure the path of a result directory where will download files of grapthics")
+	grafana.Prefix = flag.String("prefix", "", "prefix for downloading files")
+	// gui := flag.Bool("gui", false, "turn on gui as a server")
+	flag.Parse()
+
+	err := os.MkdirAll(*grafana.Dir, os.ModeAppend)
+
+	if err != nil {
+		log.Panicln("Dir did't create. Please try the path:", *grafana.Dir)
+	}
+	log.Println("Directory was tryed. Path:", *grafana.Dir)
 
 }
