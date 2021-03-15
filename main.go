@@ -52,7 +52,7 @@ func main() {
 		}
 	}
 	close(downChan)
-	log.Println("Channel was closed")
+	log.Println("Application was finished")
 
 }
 

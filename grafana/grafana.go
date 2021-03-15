@@ -65,7 +65,7 @@ func (g *Grafana) GetDashboardByUid(uid string) (*DashboardFull, error) {
 	}
 	defer resp.Body.Close()
 
-	log.Println("Request:", req, "was recived")
+	log.Println("Request:", req.RequestURI, "was recived")
 
 	dec := json.NewDecoder(resp.Body)
 
@@ -73,7 +73,7 @@ func (g *Grafana) GetDashboardByUid(uid string) (*DashboardFull, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Println("Request:", req, "was write to dash as JSON")
+	log.Println("Request:", req.RequestURI, "was write to dash as JSON")
 	return &dash, nil
 
 }

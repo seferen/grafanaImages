@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// Dashboard is struct from Grafana, using for serach after Search function.
 type Dashboard struct {
 	ID        int      `json:"id"`
 	UID       string   `json:"uid"`
@@ -24,6 +25,7 @@ func (d Dashboard) String() string {
 	return fmt.Sprintf("dashboard: {id: %d, uid: %s, title: %s}", d.ID, d.UID, d.Title)
 }
 
+// Variables is a struct
 type Variables struct {
 	Current struct {
 		Value interface{} `json:"value"`
@@ -42,6 +44,7 @@ func (v *Variables) UnmarshalJSON(b []byte) error {
 
 }
 
+// DashboardFull is a struct from Grafana Api, contains information about default variables of Grafana's dashboard and panels.
 type DashboardFull struct {
 	Meta struct {
 		Slug string `json:"slug"`

@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// Panel struct contains information about Grafana's Panel, using for search graphs
 type Panel struct {
 	Id          int     `json:"id"`
 	Title       string  `json:"Title"`
@@ -20,25 +21,11 @@ func (p Panel) String() string {
 	return fmt.Sprintf("Panel: {id: %d, title: %s, type: %s, panels: %v, transparent: %v}", p.Id, p.Title, p.Type, p.Panels, p.Transparent)
 }
 
+// GetPanelIdWithGraph get search from deep panels and and create url and a file name to FileUrl struct and send resul to down chan
 func (p *Panel) GetPanelIdWithGraph(grafana *Grafana, dashboard *DashboardFull, down chan *FileUrl) {
 
 	//если Тип является графиком то выполнить деествия в урпавляющей конструкции
 	if p.Type == "graph" {
-		// log.Println(p)
-		//Парсим юрл Юрл Графаны
-
-		//формируем query для запроса
-		// qr := url.Values{}
-
-		// qr.Set("orgId", "1")
-		// qr.Set("panelId", strconv.Itoa(p.Id))
-
-		// qr.Set("from", parceTime(grafana.Test.TimeStart))
-		// qr.Set("to", parceTime(grafana.Test.TimeEnd))
-		// qr.Set("width", "1000")
-		// qr.Set("height", "500")
-		// qr.Set("tz", "Europe/Moscow")
-		// qr.Set("timeout", "20")
 
 		if ls := grafana.Config[dashboard.Dashboard.Title]; len(ls) != 0 {
 
