@@ -68,7 +68,7 @@ func main() {
 }
 
 func init() {
-	log.Println("Main init")
+	log.Println("Start initiaate")
 	configFile = flag.String("f", "config.json", "a file with configeration for app")
 	grafana.Dir = flag.String("dir", "result", "configure the path of a result directory where will download files of grapthics")
 	grafana.Prefix = flag.String("prefix", "", "prefix for downloading files")

@@ -1,3 +1,3 @@
-module githab.com/seferen/grafanaImages
+module github.com/seferen/grafanaImages
 
 go 1.16
