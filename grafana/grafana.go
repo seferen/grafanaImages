@@ -14,6 +14,7 @@ import (
 //Grafana config of Grafana structure hold all configurations needed for a work of the application.
 type Grafana struct {
 	URL  Url `json:"url"`
+	Org  Org
 	Test struct {
 		TimeStart string `json:"timeStart"`
 		TimeEnd   string `json:"timeEnd"`
@@ -49,6 +50,33 @@ func (g *Grafana) Search() ([]Dashboard, error) {
 	}
 
 	return result, nil
+}
+
+func (g *Grafana) GetOrgId() error {
+	req, err := g.NewGrafanaRequest(http.MethodGet, g.URL.url.String()+"/api/org/", nil)
+
+	if err != nil {
+		return err
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// dec := json.NewDecoder(resp.Body)
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	log.Println(string(b))
+	err = json.Unmarshal(b, &g.Org)
+	// err = dec.Decode(&g.Org)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (g *Grafana) GetDashboardByUid(uid string) (*DashboardFull, error) {

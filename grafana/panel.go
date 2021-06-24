@@ -35,7 +35,7 @@ func (p *Panel) GetPanelIdWithGraph(grafana *Grafana, dashboard *DashboardFull, 
 				resultUrl.Path = strings.ReplaceAll(dashboard.Meta.URL, "/d", "/render/d-solo")
 				qr := url.Values{}
 
-				qr.Set("orgId", "1")
+				qr.Set("orgId", strconv.Itoa(grafana.Org.Id))
 				qr.Set("panelId", strconv.Itoa(p.Id))
 
 				qr.Set("from", parceTime(grafana.Test.TimeStart))

@@ -41,6 +41,13 @@ func main() {
 			}
 		}()
 
+		err := graf.GetOrgId()
+
+		if err != nil {
+			log.Panic(err)
+		}
+		log.Println("Was found orgId:", graf.Org.Id)
+
 		dashs, err := graf.Search()
 		if err != nil {
 			log.Panicln(err)
@@ -68,12 +75,13 @@ func main() {
 }
 
 func init() {
-	log.Println("Start initiaate")
+	log.Println("Start initiaate flags")
 	configFile = flag.String("f", "config.json", "a file with configeration for app")
 	grafana.Dir = flag.String("dir", "result", "configure the path of a result directory where will download files of grapthics")
 	grafana.Prefix = flag.String("prefix", "", "prefix for downloading files")
 	gui = flag.Bool("gui", false, "turn on gui as a server")
 	flag.Parse()
+	log.Println("Stopping initiate flags")
 
 	err := os.MkdirAll(*grafana.Dir, os.ModeAppend)
 

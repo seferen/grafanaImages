@@ -68,3 +68,8 @@ type FileUrl struct {
 func (f FileUrl) String() string {
 	return fmt.Sprintf("fileUrl: {fileName: %s, url: %s, Responce Status: %d, Writing file: %t}", f.FileName, f.URL.String(), f.respStatus, f.fileWriting)
 }
+
+type Org struct {
+	Id   int    `json:"id"`
+	Name string `json:"name"`
+}
