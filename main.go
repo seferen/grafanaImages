@@ -5,8 +5,8 @@ import (
 	"log"
 	"os"
 
-	"./config"
-	"./grafana"
+	"github.com/seferen/grafanaImages/config"
+	"github.com/seferen/grafanaImages/grafana"
 )
 
 var (
@@ -16,13 +16,18 @@ var (
 )
 
 func main() {
+
+	log.Println("Application was started")
+
 	if *gui {
 
 	} else {
 
 		downChan := make(chan *grafana.FileUrl)
 		graf := grafana.Grafana{}
+		log.Println(graf)
 		config.GetConfigFromFile(*configFile, &graf)
+		log.Println("test was started", graf.Test.TimeStart, "test was finished", graf.Test.TimeEnd)
 
 		go func() {
 			log.Println("chan was started")
@@ -63,7 +68,7 @@ func main() {
 }
 
 func init() {
-	// log.Println("Main init")
+	log.Println("Main init")
 	configFile = flag.String("f", "config.json", "a file with configeration for app")
 	grafana.Dir = flag.String("dir", "result", "configure the path of a result directory where will download files of grapthics")
 	grafana.Prefix = flag.String("prefix", "", "prefix for downloading files")

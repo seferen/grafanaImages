@@ -19,5 +19,13 @@ func GetConfigFromFile(fileName string, configStruct interface{}) {
 		log.Fatal(err)
 	}
 	log.Println("file", fileName, "was readed.", configStruct)
+	// Write an example of yaml file
+	// fileW, err := os.Create(fileName + ".yaml")
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// defer fileW.Close()
+	// enc := yaml.NewEncoder(fileW)
+	// enc.Encode(configStruct)
 
 }

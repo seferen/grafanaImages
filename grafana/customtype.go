@@ -17,8 +17,11 @@ func (u Url) String() string {
 
 }
 
-func (u *Url) MarshalJSON() ([]byte, error) {
+func (u Url) MarshalJSON() ([]byte, error) {
 	return json.Marshal(u.UrlStr)
+}
+func (u Url) MarshalYAML() ([]byte, error) {
+	return []byte(u.UrlStr), nil
 }
 
 func (u *Url) UnmarshalJSON(b []byte) error {
@@ -34,6 +37,20 @@ func (u *Url) UnmarshalJSON(b []byte) error {
 
 	return nil
 
+}
+
+func (u *Url) UnmarshalYAML(b []byte) error {
+	err := json.Unmarshal(b, &u.UrlStr)
+	if err != nil {
+		return err
+	}
+
+	u.url, err = url.Parse(u.UrlStr)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // FileUrl is a struct for saving information about downloading file
