@@ -51,18 +51,18 @@ type DashboardFull struct {
 		URL  string `json:"url"`
 	} `json:"meta"`
 	Dashboard struct {
-		Annotations   interface{} `json:"annotations"`
-		Editable      bool        `json:"editable"`
-		GnetId        int         `json:"gnetId"`
-		GraphTooltip  int         `json:"graphTooltip"`
-		Id            int         `json:"id"`
-		Iteration     int         `json:"iteration"`
-		Links         []string    `json:"links"`
-		Panels        []Panel     `json:"panels"`
-		Refresh       bool        `json:"refresh"`
-		SchemaVersion int         `json:"schemaVersion"`
-		Style         string      `json:"style"`
-		Tags          []string    `json:"tags"`
+		Annotations  interface{} `json:"annotations"`
+		Editable     bool        `json:"editable"`
+		GnetId       int         `json:"gnetId"`
+		GraphTooltip int         `json:"graphTooltip"`
+		Id           int         `json:"id"`
+		Iteration    int         `json:"iteration"`
+		Links        []string    `json:"links"`
+		Panels       []Panel     `json:"panels"`
+		// Refresh       bool        `json:"refresh"`
+		SchemaVersion int      `json:"schemaVersion"`
+		Style         string   `json:"style"`
+		Tags          []string `json:"tags"`
 		Templating    struct {
 			List []Variables `json:"list"`
 		} `json:"templating"`

@@ -27,6 +27,11 @@ func main() {
 		graf := grafana.Grafana{}
 		log.Println(graf)
 		config.GetConfigFromFile(*configFile, &graf)
+		err := graf.Ping()
+		if err != nil {
+			log.Panicln(err)
+		}
+
 		log.Println("test was started", graf.Test.TimeStart, "test was finished", graf.Test.TimeEnd)
 
 		go func() {
@@ -41,7 +46,7 @@ func main() {
 			}
 		}()
 
-		err := graf.GetOrgId()
+		err = graf.GetOrgId()
 
 		if err != nil {
 			log.Panic(err)
@@ -83,7 +88,7 @@ func init() {
 	flag.Parse()
 	log.Println("Stopping initiate flags")
 
-	err := os.MkdirAll(*grafana.Dir, os.ModeAppend)
+	err := os.MkdirAll(*grafana.Dir, 0777)
 
 	if err != nil {
 		log.Panicln("Dir did't create. Please try the path:", *grafana.Dir)

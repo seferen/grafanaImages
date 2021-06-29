@@ -2,6 +2,7 @@ package grafana
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -27,6 +28,28 @@ type Grafana struct {
 func (g Grafana) String() string {
 
 	return fmt.Sprintf("Grafana: {url: %s, token: %s}", g.URL.UrlStr, g.TOKEN)
+}
+
+func (g *Grafana) Ping() error {
+
+	req, err := g.NewGrafanaRequest(http.MethodGet, g.URL.url.String()+"/api/login/ping/", nil)
+	if err != nil {
+		return err
+	}
+	resp, err := client.Do(req)
+
+	if err != nil {
+		return err
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return errors.New("Please check your grafana url: " + g.URL.String() + ". It was return status code: " + resp.Status)
+	}
+
+	return nil
+
 }
 
 //Search - function that used the API Grafana from it documentation and insert into the Grafana struct dashboards with information about elements
@@ -64,14 +87,8 @@ func (g *Grafana) GetOrgId() error {
 	}
 	defer resp.Body.Close()
 
-	// dec := json.NewDecoder(resp.Body)
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	log.Println(string(b))
-	err = json.Unmarshal(b, &g.Org)
-	// err = dec.Decode(&g.Org)
+	dec := json.NewDecoder(resp.Body)
+	err = dec.Decode(&g.Org)
 	if err != nil {
 		return err
 	}
@@ -144,20 +161,21 @@ func (g *Grafana) DownloadFile(u *FileUrl) {
 }
 
 func writeFile(fileData []byte, u *FileUrl, endFile string) {
-	err := ioutil.WriteFile(filepath.Join(*Dir, *Prefix+u.FileName+endFile), fileData, os.ModeAppend)
-	n := 0
-	for err != nil {
-		log.Println("fileName for write:", u.FileName)
+	for i := 0; true; i++ {
 
-		fileName := fmt.Sprintf("%s_%d", u.FileName, n)
-		err = ioutil.WriteFile(filepath.Join(*Dir, *Prefix+u.FileName+endFile), fileData, os.ModeAppend)
-		if err != nil {
-			u.FileName = fileName
+		filePath := filepath.Join(*Dir, fmt.Sprintf("%s%s_%d%s", *Prefix, u.FileName, i, endFile))
+		log.Println("file will writed to", filePath)
+		if _, err := os.Stat(filePath); os.IsNotExist(err) {
+			if err := os.WriteFile(filePath, fileData, os.ModePerm); err != nil {
+				log.Println("Problem with writing file:", u.FileName, "message:", err)
+			} else {
+				u.fileWriting = true
+			}
 			break
+		} else {
+			log.Println("file is exist:", filePath)
 		}
-		n = n + 1
 
 	}
-	u.fileWriting = true
 
 }
